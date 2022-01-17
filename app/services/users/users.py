@@ -38,7 +38,7 @@ def create_user():
 
         user = dict(request.json)
 
-        if type(user["name"]) != str or type(user["email"]) != str:
+        if type(user["nome"]) != str or type(user["email"]) != str:
             raise BadRequestDataTypeError
         
         for any_user in database["data"]:
@@ -47,7 +47,7 @@ def create_user():
 
         new_user = dict({})
         new_user["email"] = user["email"].lower()
-        new_user["name"] = user['name'].title()
+        new_user["nome"] = user['nome'].title()
         
         if len(database["data"]) == 0:
             new_user["id"] =  1
@@ -62,7 +62,9 @@ def create_user():
         return jsonify(database), 201
         
     except BadRequestDataTypeError:
-        return jsonify({'message': 'Name and email must be string'}), 400
+        nome_type = type(user["nome"])
+        email_type = type(user["email"])
+        return jsonify({'message': 'nome and email must be string', "error": f"nome is {nome_type} and email is {email_type}"}), 400
 
     except ConflictEmailError:
         return jsonify({'message': 'E-mail has already been taken'}), 409
