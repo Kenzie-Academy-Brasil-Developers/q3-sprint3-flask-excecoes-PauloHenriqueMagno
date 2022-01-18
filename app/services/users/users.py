@@ -62,9 +62,30 @@ def create_user():
         return jsonify(database), 201
         
     except BadRequestDataTypeError:
-        nome_type = type(user["nome"])
-        email_type = type(user["email"])
-        return jsonify({'message': 'nome and email must be string', "error": f"nome is {nome_type} and email is {email_type}"}), 400
+        resp = {"wrong fields": []}
+
+        def get_type(value):
+            value_type = str(type(value))[8:-2]
+
+            if value_type == "str":
+                value_type = "string"
+            if value_type == "int":
+                value_type = "integer"
+            if value_type == "dict":
+                value_type = "dictionary"
+                
+            return value_type
+
+        nome_type = get_type(user["nome"])
+        email_type = get_type(user["email"])
+
+        if nome_type != "string":
+            resp["wrong fields"].append({"nome": nome_type})
+
+        if email_type != "string":
+            resp["wrong fields"].append({"email": email_type})
+
+        return jsonify(resp), 400
 
     except ConflictEmailError:
-        return jsonify({'message': 'E-mail has already been taken'}), 409
+        return jsonify({"error": "User already exists."}), 409
